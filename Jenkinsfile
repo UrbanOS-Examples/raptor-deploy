@@ -23,10 +23,12 @@ node('infrastructure') {
         scos.doCheckoutStage()
 
         doStageIfDeployingToDev('Deploy to Dev') {
-            def extraArgs = "--set image.tag=${env.DEV_IMAGE_TAG} --recreate-pods \
-                --set auth.auth0_client_id=${credentials(auth0_client_id_dev)} \
-                --set auth.auth0_client_secret=${credentials(auth0_client_secret_dev)}"
-            deployTo('dev', true, extraArgs)
+            withCredentials([string(credentialsId: 'auth0_client_id_dev', variable: 'AUTH0_CLIENT_ID'), string(credentialsId: 'auth0_client_secret_dev', variable: 'AUTH0_CLIENT_SECRET')]) {
+                def extraArgs = """--set image.tag=${env.DEV_IMAGE_TAG} --recreate-pods \
+                        --set auth.auth0_client_id=$AUTH0_CLIENT_ID \
+                        --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
+                deployTo('dev', true, extraArgs)
+            }
         }
 
         doStageIfMergedToMaster('Process Dev job') {
