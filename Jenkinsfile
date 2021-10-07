@@ -1,5 +1,5 @@
 library(
-    identifier: 'pipeline-lib@4.7.0',
+    identifier: 'pipeline-lib@4.8.0',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
@@ -18,42 +18,46 @@ def doStageIfDeployingToDev = doStageIf.curry(env.DEV_DEPLOYMENT == "true")
 def doStageIfMergedToMaster = doStageIf.curry(scos.changeset.isMaster && env.DEV_DEPLOYMENT == "false")
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
 
-node ('infrastructure') {
+node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
         doStageIfDeployingToDev('Deploy to Dev') {
-            deployTo(
-                environment: 'dev',
-                extraVars: [
-                    'extra_helm_args': "--set image.tag=${env.DEV_IMAGE_TAG} --recreate-pods"
-                ])
+            def extraArgs = "--set image.tag=${env.DEV_IMAGE_TAG} --recreate-pods \
+                --set auth.auth0_client_id=${credentials(auth0_client_id_dev)} \
+                --set auth.auth0_client_secret=${credentials(auth0_client_secret_dev)}"
+            deployTo('dev', true, extraArgs)
         }
 
         doStageIfMergedToMaster('Process Dev job') {
-            scos.devDeployTrigger('discovery_api')
+            scos.devDeployTrigger('raptor')
         }
 
         doStageIfMergedToMaster('Deploy to Staging') {
-            deployTo(environment: 'staging')
+            deployTo('staging', true)
             scos.applyAndPushGitHubTag('staging')
         }
 
         doStageIfRelease('Deploy to Production') {
-            deployTo(environment: 'prod')
+            deployTo('prod', false)
             scos.applyAndPushGitHubTag('prod')
         }
     }
 }
 
-def deployTo(params = [:]) {
-    def environment = params.get('environment')
-    def extraVars = params.get('extraVars', [:])
+def deployTo(environment, internal, extraArgs = '') {
+    if (environment == null) throw new IllegalArgumentException("environment must be specified")
 
-    def terraform = scos.terraform(environment)
-    sshagent(["GitHub"]) {
-        terraform.init()
+    scos.withEksCredentials(environment) {
+        sh("""#!/bin/bash
+            set -ex
+            helm repo add scdp https://datastillery.github.io/charts
+            helm repo update
+            helm upgrade --install raptor scdp/raptor  \
+                --version 1.1.0 \
+                --namespace=admin \
+                --values=raptor-base.yaml \
+                ${extraArgs}
+        """.trim())
     }
-    terraform.plan(terraform.defaultVarFile, extraVars)
-    terraform.apply()
 }

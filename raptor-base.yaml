@@ -1,0 +1,20 @@
+global:
+  kafka:
+    brokers: "streaming-service-kafka-bootstrap.streaming-prime:9092"
+
+replicaCount: 1
+
+image:
+  tag: development
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 1
+  requests:
+    memory: 512Mi
+    cpu: 1
+
+auth:
+  auth0_client_id: ""
+  auth0_client_secret: ""

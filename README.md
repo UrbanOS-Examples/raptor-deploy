@@ -1,2 +1,1 @@
-Deploys Discovery API on Smart Columbus OS
-  
+Deploys Raptor on Smart Columbus OS
