@@ -25,6 +25,7 @@ node('infrastructure') {
         doStageIfDeployingToDev('Deploy to Dev') {
             withCredentials([string(credentialsId: 'auth0_client_id_dev', variable: 'AUTH0_CLIENT_ID'), string(credentialsId: 'auth0_client_secret_dev', variable: 'AUTH0_CLIENT_SECRET')]) {
                 def extraArgs = """--set image.tag=${env.DEV_IMAGE_TAG} --recreate-pods \
+                        --set global.auth.auth0_domain=smartcolumbusos-dev.auth0.com \
                         --set auth.auth0_client_id=$AUTH0_CLIENT_ID \
                         --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
                 deployTo('dev', true, extraArgs)
