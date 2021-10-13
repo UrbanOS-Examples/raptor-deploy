@@ -5,7 +5,8 @@ global:
 replicaCount: 1
 
 image:
-  tag: development
+  repository: smartcitiesdata/raptor
+  tag: 1.0.0
 
 resources:
   limits:

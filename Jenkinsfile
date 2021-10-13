@@ -37,8 +37,12 @@ node('infrastructure') {
         }
 
         doStageIfMergedToMaster('Deploy to Staging') {
-            deployTo('staging', true)
-            scos.applyAndPushGitHubTag('staging')
+            withCredentials([string(credentialsId: 'auth0_client_id_staging', variable: 'AUTH0_CLIENT_ID'), string(credentialsId: 'auth0_client_secret_staging', variable: 'AUTH0_CLIENT_SECRET')]) {
+                def extraArgs = """--set auth.auth0_client_id=$AUTH0_CLIENT_ID \
+                        --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
+                deployTo('staging', true)
+                scos.applyAndPushGitHubTag('staging')
+            }
         }
 
         doStageIfRelease('Deploy to Production') {
