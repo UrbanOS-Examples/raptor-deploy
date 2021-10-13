@@ -38,7 +38,8 @@ node('infrastructure') {
 
         doStageIfMergedToMaster('Deploy to Staging') {
             withCredentials([string(credentialsId: 'auth0_client_id_staging', variable: 'AUTH0_CLIENT_ID'), string(credentialsId: 'auth0_client_secret_staging', variable: 'AUTH0_CLIENT_SECRET')]) {
-                def extraArgs = """--set auth.auth0_client_id=$AUTH0_CLIENT_ID \
+                def extraArgs = """--set global.auth.auth0_domain=smartcolumbusos-staging.auth0.com \
+                        --set auth.auth0_client_id=$AUTH0_CLIENT_ID \
                         --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
                 deployTo('staging', true)
                 scos.applyAndPushGitHubTag('staging')
