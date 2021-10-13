@@ -63,7 +63,7 @@ def deployTo(environment, internal, extraArgs = '') {
             helm upgrade --install raptor scdp/raptor  \
                 --version 1.1.0 \
                 --namespace=admin \
-                --values=raptor-base.yaml \
+                --values=raptor.yaml \
                 ${extraArgs}
         """.trim())
     }
