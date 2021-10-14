@@ -41,7 +41,7 @@ node('infrastructure') {
                 def extraArgs = """--set global.auth.auth0_domain=smartcolumbusos-staging.auth0.com \
                         --set auth.auth0_client_id=$AUTH0_CLIENT_ID \
                         --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
-                deployTo('staging', true)
+                deployTo('staging', true, extraArgs)
                 scos.applyAndPushGitHubTag('staging')
             }
         }
