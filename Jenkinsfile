@@ -47,8 +47,13 @@ node('infrastructure') {
         }
 
         doStageIfRelease('Deploy to Production') {
-            deployTo('prod', false)
-            scos.applyAndPushGitHubTag('prod')
+            withCredentials([string(credentialsId: 'auth0_client_id_prod', variable: 'AUTH0_CLIENT_ID'), string(credentialsId: 'auth0_client_secret_prod', variable: 'AUTH0_CLIENT_SECRET')]) {
+                def extraArgs = """--set global.auth.auth0_domain=smartcolumbusos-prod.auth0.com \
+                        --set auth.auth0_client_id=$AUTH0_CLIENT_ID \
+                        --set auth.auth0_client_secret=$AUTH0_CLIENT_SECRET"""
+                deployTo('prod', false, extraArgs)
+                scos.applyAndPushGitHubTag('prod')
+            }
         }
     }
 }
