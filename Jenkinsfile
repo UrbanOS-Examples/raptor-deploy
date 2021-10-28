@@ -64,7 +64,7 @@ def deployTo(environment, internal, extraArgs = '') {
     scos.withEksCredentials(environment) {
         sh("""#!/bin/bash
             set -ex
-            helm repo add https://urbanos-public.github.io/charts/
+            helm repo add scdp https://urbanos-public.github.io/charts/
             helm repo update
             helm upgrade --install raptor scdp/raptor  \
                 --version 1.1.0 \
